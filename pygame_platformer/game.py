@@ -13,8 +13,11 @@ class Game:
         pygame.display.set_caption("platformer")
         self.screen = pygame.display.set_mode((640, 480))
         self.display = pygame.Surface((320, 240))
+        
         self.clock = pygame.time.Clock()
+        
         self.movement = [False, False]
+        
         self.assets = {
             "decor": load_images("tiles/decor"),
             "grass": load_images("tiles/grass"),
@@ -37,6 +40,7 @@ class Game:
         self.player = Player(self, (50, 50), (8, 15))
 
         self.tilemap = Tilemap(self, tile_size=16)
+        self.tilemap.load("map.json")
 
         self.scroll = [0, 0]
 
