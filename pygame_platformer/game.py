@@ -1,12 +1,15 @@
 import pygame, sys, random, math
 
-from scripts.entities import PhysicsEntity, Player
+from scripts.entities import PhysicsEntity, Player, Enemy
 from scripts.utils import load_image, load_images, Animation
 from scripts.tilemap import Tilemap
 from scripts.clouds import Clouds, Cloud
 from scripts.particle import Particle
 
 
+# Game class initializes pygame, creates display surfaces,
+# loads assets, initializes game objects like player,
+# enemies, particles, tilemap etc. Handles game loop.
 class Game:
     def __init__(self):
         pygame.init()
@@ -27,6 +30,8 @@ class Game:
             "player": load_image("entities/player.png"),
             "background": load_image("background.png"),
             "clouds": load_images("clouds"),
+            "enemy/idle": Animation(load_images("entities/enemy/idle"), img_dur=6),
+            "enemy/run": Animation(load_images("entities/enemy/run"), img_dur=4),
             "player/idle": Animation(load_images("entities/player/idle"), img_dur=6),
             "player/run": Animation(load_images("entities/player/run")),
             "player/jump": Animation(load_images("entities/player/jump")),
@@ -52,6 +57,13 @@ class Game:
             self.leaf_spawners.append(
                 pygame.Rect(4 + tree["pos"][0], 4 + tree["pos"][1], 23, 13)
             )
+        self.enemies = []
+        for spawner in self.tilemap.extract([("spawner", 0), ("spawner", 1)]):
+            if spawner["variant"] == 0:
+                self.player.pos = spawner["pos"]
+            else:
+                self.enemies.append(Enemy(self, spawner["pos"], (8, 15)))
+
         self.particles = []
         self.scroll = [0, 0]
 
@@ -91,6 +103,11 @@ class Game:
             self.clouds.render(self.display, offset=render_scroll)
 
             self.tilemap.render(self.display, offset=render_scroll)
+
+
+            for enemy in self.enemies.copy():
+                enemy.update(self.tilemap, (0, 0))
+                enemy.render(self.display, offset=render_scroll)
 
             self.player.update(self.tilemap, (self.movement[1] - self.movement[0], 0))
             self.player.render(self.display, offset=render_scroll)
